@@ -162,3 +162,7 @@ Each layer compresses the content once more. A headline in the layer-4 script ma
 - The layer-4 video itself (only the script exists)
 - Anthropic API: the model is called in one function, `pipeline.llm()`; swap it there
 - Multi-user use: the tool relies on the logged-in CLI and keys on this Mac, with no accounts or cost control
+
+## License
+
+MIT, see [LICENSE](LICENSE).
