@@ -1,5 +1,7 @@
 # explain-ladder-web
 
+English: [README.en.md](README.en.md)
+
 貼一個 YouTube、bilibili 影片連結，或 Apple Podcasts 的單集連結，自動產出 explain-ladder skill 的四層內容。
 Podcast 用 Apple 的公開查詢 API 找音檔，再本機聽寫；貼整個節目的連結會提示改貼單集（單集按「分享」→「拷貝連結」）。只給自己在這台 Mac 上用。
 
@@ -102,7 +104,7 @@ flowchart LR
 | `static/index.html` | 單一網頁：輸入框、工作清單、進度、五個分頁（寫作、圖解、網頁、口白稿、逐字稿） |
 | `test_pipeline.py` | 連結檢查、挑字幕、字幕轉文字、拆圖解的單元測試 |
 
-要先裝好的東西：`yt-dlp`、`ffmpeg`、`mlx_whisper`、已登入的 `claude` CLI、Chrome、上面那個 venv。
+要先裝好的東西見上面〈安裝〉。
 
 ## 流程
 
@@ -172,7 +174,7 @@ YouTube 沒有標原聲語言時，上面的規則認不出翻譯字幕（例：
 
 ## 做第 4 層影片之前
 
-先讀 `~/sides/story/瑞導IP/解說片/檢查表.md`。最要緊的一條：內容每往上一層就被壓縮一次，第 4 層口白稿的標題可能是原文沒有的句子（2026-10-12「機會在 agent，不在模型」就是這樣來的）。掛著講者名字的大字，先回 `逐字稿.txt` 找到出處。
+內容每往上一層就被壓縮一次，第 4 層口白稿的標題可能是原文沒有的句子。掛著講者名字的大字，先回 `逐字稿.txt` 找到出處。
 
 ## 還沒做
 
