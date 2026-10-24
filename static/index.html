@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="zh-Hant">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>四層階梯</title>
+<style>
+  :root { --ink:#151A21; --grey:#5B6573; --line:#DDE2E8; --bg:#F4F6F8; --card:#fff; --blue:#1F4FD1; --yellow:#FFD34D; --red:#C0392B; --green:#1E8E5A; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:16px/1.7 -apple-system, "PingFang TC", "Noto Sans TC", sans-serif; color:var(--ink); background:var(--bg); }
+  header { padding:20px 24px 16px; background:var(--card); border-bottom:1px solid var(--line); }
+  h1 { margin:0 0 12px; font-size:20px; }
+  h1 small { font-weight:400; color:var(--grey); font-size:14px; margin-left:8px; }
+  form { display:flex; gap:8px; flex-wrap:wrap; }
+  select, input[type=text] { padding:8px 12px; font:inherit; font-size:14px; border:1px solid var(--line); border-radius:8px; background:#fff; }
+  input[type=url] { flex:1; min-width:240px; padding:10px 12px; font:inherit; border:1px solid var(--line); border-radius:8px; }
+  button { padding:10px 18px; font:inherit; border:0; border-radius:8px; background:var(--blue); color:#fff; cursor:pointer; }
+  button.ghost { background:none; color:var(--blue); border:1px solid var(--blue); padding:4px 12px; font-size:14px; }
+  #msg { color:var(--red); font-size:14px; min-height:1.4em; margin-top:6px; }
+  main { display:grid; grid-template-columns:300px 1fr; gap:16px; padding:16px 24px; align-items:start; }
+  @media (max-width:800px) { main { grid-template-columns:1fr; padding:12px; } }
+  .list { display:flex; flex-direction:column; gap:8px; }
+  .job { padding:10px 12px; background:var(--card); border:1px solid var(--line); border-radius:10px; cursor:pointer; }
+  .job.on { border-color:var(--blue); box-shadow:0 0 0 2px #1F4FD122; }
+  .job b { display:block; font-size:14px; line-height:1.4; overflow-wrap:anywhere; }
+  .job span { font-size:12px; color:var(--grey); }
+  .job { position:relative; padding-right:52px; }
+  .del { position:absolute; top:8px; right:8px; font:inherit; font-size:12px; color:var(--grey); background:none; border:1px solid var(--line); border-radius:6px; padding:1px 8px; cursor:pointer; }
+  .del:hover { color:#b3261e; border-color:#b3261e; }
+  .panel { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px 20px; min-width:0; }
+  .panel h2 { margin:0 0 4px; font-size:18px; overflow-wrap:anywhere; }
+  .meta { font-size:13px; color:var(--grey); overflow-wrap:anywhere; }
+  .steps { display:flex; flex-wrap:wrap; gap:6px; margin:12px 0; }
+  .step { font-size:13px; padding:2px 10px; border-radius:99px; border:1px solid var(--line); color:var(--grey); }
+  .step.完成 { color:var(--green); border-color:var(--green); }
+  .step.進行中 { background:var(--yellow); border-color:var(--yellow); color:var(--ink); }
+  .step.失敗 { color:var(--red); border-color:var(--red); }
+  .error { color:var(--red); font-size:14px; white-space:pre-wrap; overflow-wrap:anywhere; }
+  .tabs { display:flex; flex-wrap:wrap; gap:4px; border-bottom:1px solid var(--line); margin-top:8px; }
+  .tab { padding:8px 14px; cursor:pointer; border-bottom:3px solid transparent; color:var(--grey); }
+  .tab.on { color:var(--ink); border-color:var(--blue); font-weight:600; }
+  .tab.off { opacity:.35; cursor:default; }
+  #view { padding-top:12px; overflow-wrap:anywhere; }
+  #view img { max-width:100%; border:1px solid var(--line); border-radius:8px; margin:8px 0; }
+  #view table { border-collapse:collapse; display:block; overflow-x:auto; }
+  #view th, #view td { border:1px solid var(--line); padding:6px 10px; text-align:left; vertical-align:top; }
+  #view pre { background:var(--bg); padding:12px; border-radius:8px; overflow-x:auto; white-space:pre-wrap; font-size:14px; }
+  #view blockquote { margin:0; padding-left:12px; border-left:3px solid var(--line); color:var(--grey); }
+  iframe { width:100%; height:78vh; border:1px solid var(--line); border-radius:8px; }
+  .empty { color:var(--grey); padding:24px 0; }
+</style>
+
+<header>
+  <h1>四層階梯<small>貼 YouTube、bilibili 或 Apple Podcasts 單集連結，或上傳 .md／.pdf 檔 → 寫作、圖解、網頁、口白稿</small></h1>
+  <form id="form">
+    <input type="url" id="url" placeholder="https://www.youtube.com/watch?v=…">
+    <button>開始</button>
+    <input type="text" id="reader" placeholder="讀者是誰（不填＝一般讀者；例：國中自然科學生）" style="flex-basis:100%">
+    <label style="flex-basis:100%;font-size:14px">或上傳 .md 或 .pdf 檔（內容直接當逐字稿，不用聽寫）：<input type="file" id="md" accept=".md,.markdown,.txt,.pdf"></label>
+    <label style="flex-basis:100%;font-size:14px">讀者檔（選填，一份 .md；整份交給模型，讓它照讀者在意的事寫）：<input type="file" id="profile" accept=".md,.markdown,.txt"></label>
+    <select id="source">
+      <option value="subs">逐字稿：字幕優先（快）</option>
+      <option value="zh">逐字稿：聽寫中文原聲（字幕是翻譯的時候用；長片要等）</option>
+      <option value="auto">逐字稿：聽寫原聲，自動判斷語言</option>
+    </select>
+    <select id="draw-mode">
+      <option value="mermaid">出圖：Mermaid（免費）</option>
+      <option value="gemini">出圖：Gemini 資訊圖（要花錢）</option>
+    </select>
+  </form>
+  <div id="msg"></div>
+</header>
+
+<main>
+  <div class="list" id="list"></div>
+  <div class="panel" id="panel"><div class="empty">還沒有工作。貼一個連結開始。</div></div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>
+mermaid.initialize({ startOnLoad:false, theme:"neutral" });
+const TABS = [["寫作","1_寫作.md"],["圖解","2_圖解.md"],["網頁","3_網頁.html"],["口白稿","4_影片_口白稿.md"],["逐字稿","逐字稿.txt"]];
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let all = [], cur = null, tab = "寫作", shown = "";
+
+async function refresh() {
+  all = await (await fetch("/api/jobs")).json();
+  if (!cur && all.length) cur = all[0].id;
+  $("list").innerHTML = all.map(j => {
+    const now = Object.entries(j.steps).find(([, s]) => s === "進行中" || s === "失敗");
+    const state = j.running ? (now ? now[0] + "…" : "進行中…") : j.error ? "失敗" : "完成";
+    return `<div class="job ${j.id === cur ? "on" : ""}" data-id="${j.id}"><b>${esc(j.title || j.url)}</b><span>${j.id}｜${state}</span>${j.running ? "" : `<button class="del" title="移到垃圾桶">刪除</button>`}</div>`;
+  }).join("");
+  draw();
+  if (all.some(j => j.running)) setTimeout(refresh, 3000);
+}
+
+function draw() {
+  const j = all.find(x => x.id === cur);
+  if (!j) return;
+  const has = f => j.files.includes(f);
+  if (!has(TABS.find(t => t[0] === tab)[1])) tab = (TABS.find(t => has(t[1])) || TABS[0])[0];
+  const key = JSON.stringify([j, tab]);
+  if (key === shown) return;   // 進度沒變就不重畫，免得網頁分頁一直重新載入
+  shown = key;
+  const mins = Math.round((j.duration || 0) / 60);
+  $("panel").innerHTML = `
+    <h2>${esc(j.title || "讀取影片資訊中…")}</h2>
+    <div class="meta">${[esc(j.uploader || ""), mins ? mins + " 分鐘" : "", j.url ? `<a href="${esc(j.url)}" target="_blank">${esc(j.url)}</a>` : ""].filter(Boolean).join("｜")}${j.uploader || mins || j.url ? "<br>" : ""}讀者：${esc(j.reader || "")}${j.profile ? "（讀者檔：" + esc(j.profile) + "）" : ""}<br>${esc(j.note || "")}　檔案：jobs/${j.id}/</div>
+    <div class="steps">${Object.entries(j.steps).map(([n, s]) => `<span class="step ${s}">${n}｜${s}</span>`).join("")}
+      ${!j.running && (j.error || /重跑/.test(j.note)) ? `<button class="ghost" id="retry">重跑</button>` : ""}</div>
+    ${j.error ? `<div class="error">${esc(j.error)}</div>` : ""}
+    <div class="tabs">${TABS.map(([n, f]) => `<div class="tab ${n === tab ? "on" : ""} ${has(f) ? "" : "off"}" data-tab="${n}">${n}</div>`).join("")}</div>
+    <div id="view"></div>`;
+  view(j);
+}
+
+async function view(j) {
+  const file = TABS.find(t => t[0] === tab)[1], base = `/jobs/${j.id}/`, v = $("view");
+  if (!j.files.includes(file)) { v.innerHTML = `<div class="empty">這一層還沒做好。</div>`; return; }
+  if (tab === "網頁") { v.innerHTML = `<p><a href="${base}${file}" target="_blank">在新分頁打開</a></p><iframe src="${base}${file}"></iframe>`; return; }
+  const text = await (await fetch(base + encodeURIComponent(file))).text();
+  if (tab === "逐字稿") { v.innerHTML = `<pre>${esc(text)}</pre>`; return; }
+  let htm = marked.parse(text);
+  if (tab === "圖解") {
+    const pngs = j.files.filter(f => /^圖\/圖\d+\.png$/.test(f)).sort();
+    htm = pngs.map(f => `<a href="${base}${f}" target="_blank"><img src="${base}${f}" alt="${f}"></a>`).join("") + (pngs.length ? "<hr><p class='meta'>下面是原始的 Mermaid 版（資訊圖畫錯時，以這個為準）</p>" : "") + htm;
+  }
+  v.innerHTML = htm;
+  v.querySelectorAll("code.language-mermaid").forEach(c => { const p = document.createElement("pre"); p.className = "mermaid"; p.textContent = c.textContent; c.parentElement.replaceWith(p); });
+  mermaid.run({ nodes: v.querySelectorAll(".mermaid") }).catch(() => {});
+}
+
+$("list").onclick = async e => {
+  const el = e.target.closest(".job");
+  if (!el) return;
+  if (e.target.closest(".del")) {
+    const j = all.find(x => x.id === el.dataset.id);
+    if (!confirm(`把「${j.title || j.url}」移到垃圾桶？\n（刪錯了可以從 Finder 的垃圾桶撿回來）`)) return;
+    const r = await fetch(`/api/jobs/${el.dataset.id}/delete`, { method:"POST" });
+    $("msg").textContent = r.ok ? "" : (await r.json()).error;
+    if (r.ok && cur === el.dataset.id) { cur = null; $("panel").innerHTML = '<div class="empty">已移到垃圾桶。</div>'; }
+    return refresh();
+  }
+  cur = el.dataset.id; refresh();
+};
+$("panel").onclick = async e => {
+  const t = e.target.closest(".tab");
+  if (t && !t.classList.contains("off")) { tab = t.dataset.tab; draw(); }
+  if (e.target.id === "retry") { await fetch(`/api/jobs/${cur}/retry`, { method:"POST" }); refresh(); }
+};
+const pdfBase64 = f => new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result.split(",")[1]); r.readAsDataURL(f); });
+$("form").onsubmit = async e => {
+  e.preventDefault();
+  const f = $("md").files[0];
+  if (!f && !$("url").value.trim()) { $("msg").textContent = "貼一個連結，或選一個 .md 或 .pdf 檔"; return; }
+  const body = { reader: $("reader").value, draw: $("draw-mode").value };
+  const pf = $("profile").files[0];
+  if (pf) Object.assign(body, { profile: await pf.text(), profile_name: pf.name });
+  if (f && /\.pdf$/i.test(f.name)) Object.assign(body, { pdf: await pdfBase64(f), filename: f.name });
+  else if (f) Object.assign(body, { md: await f.text(), filename: f.name });
+  else Object.assign(body, { url: $("url").value, source: $("source").value });
+  const r = await fetch("/api/jobs", { method:"POST", body: JSON.stringify(body) });
+  const d = await r.json();
+  $("msg").textContent = r.ok ? "" : d.error;
+  if (r.ok) { cur = d.id; tab = "寫作"; $("url").value = ""; $("md").value = ""; $("profile").value = ""; refresh(); }
+};
+refresh();
+</script>
+</html>

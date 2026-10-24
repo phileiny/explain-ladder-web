@@ -1,0 +1,4 @@
+jobs/
+__pycache__/
+local.json
+.env

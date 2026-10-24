@@ -1,0 +1,102 @@
+/* 星智未來版型（2026-10-17，從星智見聞台灣週報那頁抽出來）
+   pipeline 會把這份自動插進每一份 3_網頁.html；模型只用下面的 class 和 var(--…)，不自己定色彩和字型。
+   照台股的習慣：紅色往上（--up），綠色往下（--down）；金色（--mark）只標最重要的一件事。
+
+   可用的 class：
+   版面   .wrap（整頁容器）  header .eyebrow h1 .lede  nav a（錨點跳轉）  section  section+section 自動加分隔線
+   文字   .so（一句重點，左邊金線）  .note（小字說明）  .num（數字等寬）  .up .down .mark（顏色）
+   標籤   .tag（加 style="--c:var(--up)" 換顏色）
+   卡片   .grid（自動排成多欄）  .card  .card.hl（金框，標最重要的）
+   數字   .nums  .n（裡面放 <b>數字</b><span>說明</span>）
+   對照   .kv（兩欄：名稱｜數值）
+   表格   .tbl > table
+   圖     figure.fig > img ＋ figcaption
+   展開   details > summary（點開看細節）
+   篩選   .filters .frow button[aria-pressed]  .check（勾選框）
+          每一排的第一顆是「全部」，一開始只有它是 aria-pressed="true"，其他都是 false
+   顏色的意思（固定，不要換）：
+          數字漲跌   往上 var(--up) 紅，往下 var(--down) 綠（台股習慣）
+          可信度     已證實 var(--down) 綠｜公司自報 var(--mark) 金｜傳聞 var(--rumor) 紫｜市場題材 var(--up) 紅
+          最重要的一件事   var(--mark) 金，一頁只用一兩處
+   滑桿   .slider（label｜input type=range｜output）
+   測驗   .quiz .q（題目）  .q button（選項）  button.ok／button.ng（答對／答錯）  .why（理由） */
+:root{
+  --bg:#eff1ee; --surface:#ffffff; --ink:#17201c; --muted:#58645e; --line:#cdd4cf;
+  --up:#b3201f; --up-soft:#f8e3e0; --down:#12714a; --down-soft:#dcefe4; --mark:#a8780a; --rumor:#7a5ba8;
+  --display:"Noto Serif TC","Songti TC",serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --mono:"IBM Plex Mono","SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#111815; --surface:#19231f; --ink:#e6ece8; --muted:#9aa8a1; --line:#2f3d37;
+    --up:#f2837c; --up-soft:#3b1b1a; --down:#5fc795; --down-soft:#12352a; --mark:#e3b341; --rumor:#b79be3;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#111815; --surface:#19231f; --ink:#e6ece8; --muted:#9aa8a1; --line:#2f3d37;
+  --up:#f2837c; --up-soft:#3b1b1a; --down:#5fc795; --down-soft:#12352a; --mark:#e3b341; --rumor:#b79be3;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.75;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:980px;margin:0 auto;padding-block:28px 56px;display:flex;flex-direction:column;gap:24px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.3}
+h1{font-size:clamp(28px,6vw,44px);font-weight:900}
+h2{font-size:22px}
+h3{font-size:17px}
+p{margin:0}
+a{color:inherit}
+img{max-width:100%}
+.eyebrow{font-family:var(--mono);font-size:13px;letter-spacing:.08em;color:var(--muted)}
+.lede{font-size:18px;max-width:36em}
+.up{color:var(--up)} .down{color:var(--down)} .mark{color:var(--mark)}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.note{font-size:14px;color:var(--muted)}
+header{display:flex;flex-direction:column;gap:10px}
+nav{display:flex;flex-wrap:wrap;gap:8px;border-bottom:2px solid var(--ink);padding-bottom:10px}
+nav a{font:500 15px var(--body);color:var(--ink);border:1px solid var(--line);padding:6px 14px;text-decoration:none}
+nav a:hover{border-color:var(--ink)}
+section{display:flex;flex-direction:column;gap:20px;scroll-margin-top:16px;min-width:0}
+section+section{border-top:2px solid var(--ink);padding-top:24px}
+.so{padding-left:14px;border-left:3px solid var(--mark)}
+.tag{font-family:var(--mono);font-size:12px;padding:1px 7px;border:1px solid var(--c,var(--muted));color:var(--c,var(--muted));white-space:nowrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);padding:14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.card.hl{border-color:var(--mark);box-shadow:inset 3px 0 0 var(--mark)}
+.card h3{font-family:var(--body);font-size:16px;font-weight:700}
+.card p{font-size:14px;color:var(--muted)}
+.nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.n{background:var(--surface);border:1px solid var(--line);padding:14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.n b{font-family:var(--mono);font-size:24px;line-height:1.2}
+.n span{font-size:14px;color:var(--muted)}
+.kv{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;font-size:15px}
+.kv b{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+.tbl{overflow-x:auto;background:var(--surface);border:1px solid var(--line)}
+.tbl table{border-collapse:collapse;width:100%;min-width:520px;font-size:15px}
+.tbl th,.tbl td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl th{font-size:13px;color:var(--muted);font-weight:500}
+figure.fig{margin:0;background:var(--surface);border:1px solid var(--line);padding:12px;display:flex;flex-direction:column;gap:8px}
+figure.fig img{display:block;margin:0 auto;background:#fff}
+figure.fig figcaption{font-size:14px;color:var(--muted)}
+details{background:var(--surface);border:1px solid var(--line);padding:10px 14px}
+details>summary{cursor:pointer;font-weight:700}
+details[open]>summary{margin-bottom:8px}
+.filters{display:flex;flex-direction:column;gap:10px}
+.frow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.filters button,.q button{font:500 14px var(--body);color:var(--ink);background:transparent;border:1px solid var(--line);padding:4px 12px;cursor:pointer;text-align:left}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.check{display:flex;align-items:center;gap:8px;font-size:15px;cursor:pointer}
+.check input{width:18px;height:18px;accent-color:var(--mark)}
+.slider{display:grid;grid-template-columns:8em 1fr 6em;gap:12px;align-items:center;font-size:15px}
+.slider input{width:100%;accent-color:var(--mark)}
+.slider output{font-family:var(--mono);text-align:right;font-weight:600}
+.quiz{display:flex;flex-direction:column;gap:14px}
+.q{background:var(--surface);border:1px solid var(--line);padding:14px;display:flex;flex-direction:column;gap:8px}
+.q button.ok{border-color:var(--down);background:var(--down-soft)}
+.q button.ng{border-color:var(--up);background:var(--up-soft)}
+.why{font-size:14px;color:var(--muted)}
+a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--mark);outline-offset:2px}
+@media (max-width:600px){.slider{grid-template-columns:1fr 5em}.slider label{grid-column:1/-1}}
